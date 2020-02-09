@@ -1,0 +1,157 @@
+PARSER_BEGIN(Peakasso)
+import java.util.*;
+
+public class Peakasso {
+    public static ArrayList brushList = new ArrayList<Brush>();
+    public static int canvasX, canvasY, cursorX, cursorY;
+    public static void main(String args[]) throws ParseException {
+        Peakasso parser = new Peakasso(System.in);
+        parser.Parse();
+    }
+}
+
+PARSER_END(Peakasso)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+< SEMICOLON: ";" >
+|< PROGRAM: "PROGRAM" >
+|< CANVASINITSECTION: "CANVAS-INIT-SECTION :" >
+|< BRUSHDECLARATIONSECTION: "BRUSH-DECLARATION_SECTION :" >
+|< DRAWINGSECTION: "DRAWING-SECTION :" >
+|< COMMA: "," >
+|< ASSIGNMENT: "=" >
+|< CONST: "CONST" >
+|< CANVASX: "canvasX" >
+|< CANVASY: "canvasY" >
+|< CURSORX: "cursorX" >
+|< CURSORY: "cursorY" >
+|< BRUSH: "BRUSH" >
+}
+
+TOKEN :
+{
+<IDENTIFIER: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z", "0"-"9"])* >
+|<MESSAGE: "'"(~["\n"])*"'">
+|<INTLIT: ("+"|"-")[0-9]*>
+}
+
+SPECIAL_TOKEN : /* COMMENTS */
+{
+  <SINGLE_LINE_COMMENT: "!!" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+}
+
+void Parse() :
+{}
+{
+<PROGRAM> <IDENTIFIER> <SEMICOLON>
+CanvasInitSection()
+BrushDeclarationSection()
+DrawingSection()
+<EOF>
+}
+
+void CanvasInitSection() :
+{Token t1=null, t2=null, t3=null, t4=null;}
+{
+<CANVASINITSECTION>
+<CONST><CANVASX><ASSIGNMENT>(t1=<INTLIT>) {
+  if(t1 < 5 || t1 > 200) {
+    System.out.println("Canvas X axis is out of max range.Converting to 100");
+  	t1 = 100;
+  }
+  canvasX = t1;
+}<SEMICOLON><CONST><CANVASY><ASSIGNMENT>(t2=<INTLIT>) {
+  if(t2 < 5 || t2 > 200) { 
+  	System.out.println("Canvas Y axis is out of max range.Converting to 100");
+  	t2 = 100;
+  }
+  canvasY = t2;
+}<SEMICOLON><CONST><CURSORX><ASSIGNMENT>(t3=<INTLIT>) {
+	cursorX = t3;
+	//Canvas dışı kontrolü?
+}<SEMICOLON><CONST><CURSORY><ASSIGNMENT>(t4=<INTLIT>) {
+	cursorY = t4;
+}<SEMICOLON>
+
+void BrushDeclarationSection() :
+{Token t=null,i1=null,i2=null}
+{
+<BRUSHDECLARATIONSECTION>
+<BRUSH>
+(t=<IDENTIFIER>i1=<INTLIT>i2=<INTLIT> {
+	Brush t = new Brush(i1,i2);
+	brushList.add(t);
+})*<SEMICOLON>
+}
+
+void DrawingSection() :
+{}
+{
+<DRAWINGSECTION>
+ InputStatement()
+
+}
+
+//ESKIDEN KALAN KISIM AŞAĞISI
+
+void OutputStatement() :
+{}
+{
+    <OUTPUT><MESSAGE><IDENTIFIER><SEMICOLON>
+    }
+
+
+void InputStatement() :
+{Token t=null; String s=""; int index = -1;}
+{
+ (<INPUT><MESSAGE>t=<IDENTIFIER><SEMICOLON>
+ {
+    if(!variableIsDeclared(t)){
+        System.out.println("Variable \""+t.image+"\" is not declared, exiting compiler.");
+        System.exit(0);
+    }
+    else
+        for(int i=0; i<variableList.size(); i++){
+            Variable var = (Variable)variableList.get(i);
+            if(var.getName().equals(t.image))
+                index = i;
+        }
+ }
+ {
+    s=getNextToken().image;
+    if(!(s.equals("TRUE") || s.equals("FALSE") || s.equals("UNKNOWN"))){
+        System.out.println("Value must be either TRUE, FALSE or UNKNOWN");
+        System.out.println(s+" is not a valid value.");
+        System.exit(0);
+    }
+    ((Variable)variableList.get(index)).setValue(s);
+ }
+ )*
+{print();}
+}
+
+JAVACODE
+boolean variableIsDeclared(Token t) {
+    Variable var = new Variable(t.toString(), "");
+    for(int i=0; i<variableList.size(); i++){
+        Variable var2 = (Variable)variableList.get(i);
+        if(var.name.equals(var2.name))
+            return true;
+    }
+    return false;
+
+}
+JAVACODE
+void print(){
+    for(int i=0; i<variableList.size(); i++)
+        System.out.println(variableList.get(i));
+}
