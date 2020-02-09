@@ -35,6 +35,13 @@ TOKEN :
 |< CURSORX: "cursorX" >
 |< CURSORY: "cursorY" >
 |< BRUSH: "BRUSH" >
+|< RENEWBRUSH: "RENEW-BRUSH" >
+|< MOVE: "MOVE" >
+|< PAINTCANVAS: "PAINT-CANVAS" >
+|< EXHIBITCANVAS: "EXHIBIT-CANVAS" >
+|< TO: "TO" >
+|< PLUS: "PLUS" >
+|< MINUS: "MINUS" >
 }
 
 TOKEN :
@@ -94,23 +101,21 @@ void BrushDeclarationSection() :
 }
 
 void DrawingSection() :
-{}
+{Token t=null}
 {
 <DRAWINGSECTION>
- InputStatement()
-
+(  (<MOVE>(<CURSORX> | <CURSORY>)<TO>(<INTLIT> | (<CURSORX> | <CURSORY>)(<PLUS> | <MINUS>)<SEMICOLON>))*
+| (<PAINTCANVAS>t=<IDENTIFIER> {
+	if(!brushIsDeclared(t)){
+        System.out.println("Variable \""+t.image+"\" is not declared, exiting compiler.");
+        System.exit(0);
+    }
+  })
+)*
+{exhibitCanvas()}
 }
 
-//ESKIDEN KALAN KISIM AŞAĞISI
-
-void OutputStatement() :
-{}
-{
-    <OUTPUT><MESSAGE><IDENTIFIER><SEMICOLON>
-    }
-
-
-void InputStatement() :
+/*void InputStatement() :
 {Token t=null; String s=""; int index = -1;}
 {
  (<INPUT><MESSAGE>t=<IDENTIFIER><SEMICOLON>
@@ -138,20 +143,22 @@ void InputStatement() :
  )*
 {print();}
 }
+*/
 
 JAVACODE
-boolean variableIsDeclared(Token t) {
-    Variable var = new Variable(t.toString(), "");
-    for(int i=0; i<variableList.size(); i++){
-        Variable var2 = (Variable)variableList.get(i);
-        if(var.name.equals(var2.name))
+boolean brushIsDeclared(Token t) {
+    Brush br1 = new Brush(t.toString());
+    for(int i=0; i<brushList.size(); i++){
+        Brush br2 = (Brush)brushList.get(i);
+        if(br1.name.equals(br2.name))
             return true;
     }
     return false;
-
 }
-JAVACODE
+
+/*JAVACODE
 void print(){
     for(int i=0; i<variableList.size(); i++)
         System.out.println(variableList.get(i));
 }
+*/
