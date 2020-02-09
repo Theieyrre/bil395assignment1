@@ -47,8 +47,8 @@ TOKEN :
 TOKEN :
 {
 <IDENTIFIER: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z", "0"-"9"])* >
-|<MESSAGE: "'"(~["\n"])*"'">
-|<INTLIT: ("+"|"-")[0-9]*>
+|<MESSAGE: "’"(~["\n"])*"’">
+|<INTLIT: ("+"|"-")(["0"-"9"])* >
 }
 
 SPECIAL_TOKEN : /* COMMENTS */
@@ -70,49 +70,49 @@ void CanvasInitSection() :
 {Token t1=null, t2=null, t3=null, t4=null;}
 {
 <CANVASINITSECTION>
-<CONST><CANVASX><ASSIGNMENT>(t1=<INTLIT>) {
+  <CONST><CANVASX><ASSIGNMENT>(t1=<INTLIT>) {
   if(t1 < 5 || t1 > 200) {
     System.out.println("Canvas X axis is out of max range.Converting to 100");
   	t1 = 100;
   }
   canvasX = t1;
-}<SEMICOLON><CONST><CANVASY><ASSIGNMENT>(t2=<INTLIT>) {
+  }<SEMICOLON><CONST><CANVASY><ASSIGNMENT>(t2=<INTLIT>) {
   if(t2 < 5 || t2 > 200) { 
   	System.out.println("Canvas Y axis is out of max range.Converting to 100");
   	t2 = 100;
   }
   canvasY = t2;
-}<SEMICOLON><CONST><CURSORX><ASSIGNMENT>(t3=<INTLIT>) {
+  }<SEMICOLON><CONST><CURSORX><ASSIGNMENT>(t3=<INTLIT>) {
 	cursorX = t3;
 	//Canvas dışı kontrolü?
-}<SEMICOLON><CONST><CURSORY><ASSIGNMENT>(t4=<INTLIT>) {
+  }<SEMICOLON><CONST><CURSORY><ASSIGNMENT>(t4=<INTLIT>) {
 	cursorY = t4;
-}<SEMICOLON>
+  }<SEMICOLON>
+}
 
 void BrushDeclarationSection() :
-{Token t=null,i1=null,i2=null}
+{Token t5=null,i1=null,i2=null;}
 {
 <BRUSHDECLARATIONSECTION>
 <BRUSH>
-(t=<IDENTIFIER>i1=<INTLIT>i2=<INTLIT> {
-	Brush t = new Brush(i1,i2);
-	brushList.add(t);
+(t5=<IDENTIFIER>i1=<INTLIT>i2=<INTLIT> {
+	Brush br = new Brush(i1,i2);
+	brushList.add(br);
 })*<SEMICOLON>
 }
 
 void DrawingSection() :
-{Token t=null}
+{Token t6=null;}
 {
 <DRAWINGSECTION>
-(  (<MOVE>(<CURSORX> | <CURSORY>)<TO>(<INTLIT> | (<CURSORX> | <CURSORY>)(<PLUS> | <MINUS>)<SEMICOLON>))*
-| (<PAINTCANVAS>t=<IDENTIFIER> {
-	if(!brushIsDeclared(t)){
-        System.out.println("Variable \""+t.image+"\" is not declared, exiting compiler.");
+(  (<MOVE>(<CURSORX> | <CURSORY>)<TO>(<INTLIT> | (<CURSORX> | <CURSORY>)(<PLUS> | <MINUS>)<SEMICOLON>))
+| (<PAINTCANVAS>t6=<IDENTIFIER> {
+	if(!brushIsDeclared(t6)){
+        System.out.println("Variable \""+t6.image+"\" is not declared, exiting compiler.");
         System.exit(0);
     }
   })
 )*
-{exhibitCanvas()}
 }
 
 /*void InputStatement() :
