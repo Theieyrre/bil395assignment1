@@ -2,8 +2,9 @@ PARSER_BEGIN(Peakasso)
 import java.util.*;
 
 public class Peakasso {
-    public static ArrayList brushList = new ArrayList<Brush>();
+    public static ArrayList<Brush> brushList = new ArrayList<Brush>();
     public static int canvasX, canvasY, cursorX, cursorY;
+    public static char[][] canvas;
     public static void main(String args[]) throws ParseException {
         Peakasso parser = new Peakasso(System.in);
         parser.Parse();
@@ -63,6 +64,7 @@ void Parse() :
 CanvasInitSection()
 BrushDeclarationSection()
 DrawingSection()
+ExhibitCanvas()<SEMICOLON>
 <EOF>
 }
 
@@ -70,24 +72,24 @@ void CanvasInitSection() :
 {Token t1=null, t2=null, t3=null, t4=null;}
 {
 <CANVASINITSECTION>
-  (t1=<INTLIT> {
+  <CONST><CANVASX><ASSIGNMENT>(t1=<INTLIT> {
   if(Integer.parseInt(String.valueOf(t1)) < 5 || Integer.parseInt(String.valueOf(t1)) > 200) {
     System.out.println("Canvas X axis is out of max range.Converting to 100");
-  	t1 = null; // Hata olmasýn diye deðiþtirildi
-  }
-  canvasX = Integer.parseInt(String.valueOf(t1));
-  }<COMMA> t2=<INTLIT> {
+    canvasX = 100;
+  }else
+  	canvasX = Integer.parseInt(String.valueOf(t1));
+  }<SEMICOLON><CONST><CANVASY><ASSIGNMENT> t2=<INTLIT> {
   if(Integer.parseInt(String.valueOf(t2)) < 5 || Integer.parseInt(String.valueOf(t2)) > 200) { 
   	System.out.println("Canvas Y axis is out of max range.Converting to 100");
-  	t2 = null;
-  }
-  canvasY = Integer.parseInt(String.valueOf(t2));
-  })<SEMICOLON><CONST><CURSORX><ASSIGNMENT>(t3=<INTLIT>) {
+  	canvasY = 100;
+  }else
+  	canvasY = Integer.parseInt(String.valueOf(t2));
+  }<SEMICOLON><CONST><CURSORX><ASSIGNMENT>(t3=<INTLIT>) {
 	cursorX = Integer.parseInt(String.valueOf(t3));
 	//Canvas dÄ±ÅŸÄ± kontrolÃ¼?
   }<SEMICOLON><CONST><CURSORY><ASSIGNMENT>(t4=<INTLIT>) {
 	cursorY = Integer.parseInt(String.valueOf(t4));
-  }<SEMICOLON>
+  }<SEMICOLON>) { canvas = new char[canvasY][canvasX];}
 }
 
 void BrushDeclarationSection() :
@@ -102,26 +104,68 @@ void BrushDeclarationSection() :
 }
 
 void DrawingSection() :
-{Token t6=null;}
+{Token t6=null,t7 = null,t8 = null, op = null, t9=null;}
 {
 <DRAWINGSECTION>
-(  (<MOVE>(<CURSORX> | <CURSORY>)<TO>(<INTLIT> | (<CURSORX> | <CURSORY>)(<PLUS> | <MINUS>)<SEMICOLON>))
-| (<PAINTCANVAS>t6=<IDENTIFIER> {
-	if(!brushIsDeclared(t6)){
+(  (<MOVE>t7=(<CURSORX> | <CURSORY>)<TO>t8=(<INTLIT> | (<CURSORX> | <CURSORY>))op=(<PLUS> | <MINUS>)t9=(<INTLIT> | (<CURSORX> | <CURSORY>))<SEMICOLON>))
+{
+	int operand1, operand2;
+	if(t8 = <INTLIT>)
+		operand1 = Integer.parseInt(t8);
+	else if(t8 = <CURSORX>)
+		operand1 = cursorX;
+	else
+		operand1 = cursorY;
+
+	if(t9 = <INTLIT>)
+		operand1 = Integer.parseInt(t9);
+	else if(t9 = <CURSORX>)
+		operand1 = cursorX;
+	else
+		operand1 = cursorY;
+		
+  	if(t7=<CURSORX>) 
+		if(op = <PLUS>)
+			cursorX = operand1 + operand2;
+		else
+			cursorX = operand1 - operand2;
+	else
+		if(op = <PLUS>)
+			cursorY = operand1 + operand2;
+		else
+			cursorY = operand1 - operand2;
+}
+|  (<PAINTCANVAS>t6=<IDENTIFIER> {
+  	int index = brushIsDeclared(t6);
+	if(index > 0){
         System.out.println("Variable \""+t6.image+"\" is not declared, exiting compiler.");
         System.exit(0);
-    }
+    }else {
+      Brush br = brushlist.get(index);
+      for(int i=0;i<br.getHeight();i++)
+      	for(int j=0;j<br.getWidth();j++)
+      		canvas[cursorY+j][cursorX+i] = "*";
+  	}
   })
 )*
 }
 
 JAVACODE
-boolean brushIsDeclared(Token t) {
+int brushIsDeclared(Token t) {
     Brush br1 = new Brush(t.toString());
     for(int i=0; i<brushList.size(); i++){
         Brush br2 = (Brush)brushList.get(i);
         if(br1.name.equals(br2.name))
-            return true;
+            return i;
     }
-    return false;
+    return -1;
+}
+
+JAVACODE
+int ExhibitCanvas() {
+	for(int i=0;i<canvas.length;i++) { 
+		for(int j=0;j<canvas[0].length;j++)
+			System.out.print(canvas[i][j]);
+		System.out.println("");
+	}			
 }
