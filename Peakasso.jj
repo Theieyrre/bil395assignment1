@@ -1,3 +1,4 @@
+// 161101018-Mustafa Ünal , 141101041-Ali Berk Sýðýn
 PARSER_BEGIN(Peakasso)
 import java.util.*;
 
@@ -107,30 +108,31 @@ void DrawingSection() :
 {Token t6=null,t7 = null,t8 = null, op = null, t9=null;}
 {
 <DRAWINGSECTION>
-(  (<MOVE>t7=(<CURSORX> | <CURSORY>)<TO>t8=(<INTLIT> | (<CURSORX> | <CURSORY>))op=(<PLUS> | <MINUS>)t9=(<INTLIT> | (<CURSORX> | <CURSORY>))<SEMICOLON>))
+(  (<MOVE>(t7=<CURSORX> | t7=<CURSORY>) <TO>(t8=<INTLIT> | t8=<CURSORX> | t8=<CURSORY>) (op=<PLUS> | op=<MINUS>) (t9=<INTLIT> | t9=<CURSORX> | t9=<CURSORY>)<SEMICOLON>))
+ 
 {
 	int operand1, operand2;
-	if(t8 = <INTLIT>)
+	if(t8 = ("+"|"-")("0"-"9"))
 		operand1 = Integer.parseInt(t8);
-	else if(t8 = <CURSORX>)
+	else if(t8 = "cursorX")
 		operand1 = cursorX;
 	else
 		operand1 = cursorY;
 
-	if(t9 = <INTLIT>)
+	if(t9 = ("+"|"-")("0"-"9"))
 		operand1 = Integer.parseInt(t9);
-	else if(t9 = <CURSORX>)
+	else if(t9 = "cursorX")
 		operand1 = cursorX;
 	else
 		operand1 = cursorY;
 		
-  	if(t7=<CURSORX>) 
-		if(op = <PLUS>)
+  	if(t7="cursorX") 
+		if(op = "PLUS")
 			cursorX = operand1 + operand2;
 		else
 			cursorX = operand1 - operand2;
 	else
-		if(op = <PLUS>)
+		if(op = "PLUS")
 			cursorY = operand1 + operand2;
 		else
 			cursorY = operand1 - operand2;
@@ -146,8 +148,7 @@ void DrawingSection() :
       	for(int j=0;j<br.getWidth();j++)
       		canvas[cursorY+j][cursorX+i] = "*";
   	}
-  })
-)*
+  })*
 }
 
 JAVACODE
