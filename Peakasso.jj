@@ -150,7 +150,7 @@ void DrawingSection() :
         System.out.println("Variable \""+t6.image+"\" is not declared, exiting compiler.");
         System.exit(0);
     }else {
-      Brush br = brushlist.get(index);
+      Brush br = brushList.get(index);
       for(int i=0;i<br.getHeight();i++)
       	for(int j=0;j<br.getWidth();j++)
       		canvas[cursorY+j][cursorX+i] = '*';
