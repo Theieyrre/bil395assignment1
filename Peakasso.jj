@@ -112,27 +112,34 @@ void DrawingSection() :
  
 {
 	int operand1, operand2;
-	if(t8 = ("+"|"-")("0"-"9"))
-		operand1 = Integer.parseInt(t8);
-	else if(t8 = "cursorX")
+	t8 = (String)t8; t9 = (String)t9;
+	try {
+	  operand1 = Integer.parseInt(t8);
+	}
+	catch(NumberFormatException nfe) {
+	  if(t8.equals("cursorX"))
 		operand1 = cursorX;
 	else
 		operand1 = cursorY;
+	}
 
-	if(t9 = ("+"|"-")("0"-"9"))
-		operand1 = Integer.parseInt(t9);
-	else if(t9 = "cursorX")
+	try {
+	  operand1 = Integer.parseInt(t8);
+	}
+	catch(NumberFormatException nfe) {
+	  if(t8.equals("cursorX"))
 		operand1 = cursorX;
 	else
 		operand1 = cursorY;
-		
-  	if(t7="cursorX") 
-		if(op = "PLUS")
+	}
+
+  	if(t7.equals("cursorX")) 
+		if(op.equals("PLUS"))
 			cursorX = operand1 + operand2;
 		else
 			cursorX = operand1 - operand2;
 	else
-		if(op = "PLUS")
+		if(op.equals("PLUS"))
 			cursorY = operand1 + operand2;
 		else
 			cursorY = operand1 - operand2;
@@ -146,7 +153,7 @@ void DrawingSection() :
       Brush br = brushlist.get(index);
       for(int i=0;i<br.getHeight();i++)
       	for(int j=0;j<br.getWidth();j++)
-      		canvas[cursorY+j][cursorX+i] = "*";
+      		canvas[cursorY+j][cursorX+i] = '*';
   	}
   })*
 }
